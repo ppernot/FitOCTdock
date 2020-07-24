@@ -1,0 +1,16 @@
+Package: FitOCTdock
+Title: Docker container for FitOCT
+Version: 0.1
+Authors@R: 
+    person(given = "Pascal",
+           family = "Pernot",
+           role = c("aut", "cre"),
+           email = "pascal.pernot@universite-paris-saclay.fr",
+           comment = c(ORCID = "0000-0001-8586-6222"))
+Description: Analysis of OCT signals.
+License: CeCILL
+Encoding: UTF-8
+LazyData: true
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.1.1
+Remotes: ppernot/FitOCTlib

@@ -1,0 +1,7 @@
+MAJ : 
+1/ generate package FitOCTdock
+2/ copy it in FitOCTdockerFiles
+2/ docker build -t ppernot1/fitoct .
+
+RUN : docker run -d -p 3838:3838 ppernot1/fitoct
+

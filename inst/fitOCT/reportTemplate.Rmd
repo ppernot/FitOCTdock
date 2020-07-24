@@ -1,0 +1,210 @@
+---
+title: "FitOCT Report"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output:
+  html_document:
+    fig_height: 5
+    fig_width: 10
+    number_sections: yes
+    theme: cerulean
+    toc: TRUE
+  pdf_document:
+    fig_height: 5
+    fig_width: 7
+    number_sections: yes
+    toc: TRUE
+  word_document:
+    fig_height: 5
+    fig_width: 10
+    number_sections: yes
+    toc: TRUE
+fontsize: 11pt
+---
+
+```{r, results='asis', echo=FALSE}
+# knitr global options
+knitr::opts_chunk$set(comment = NA)
+
+# Graphical params
+cex=1
+mar=c(4,4,2,1)
+mgp=c(2,.75,0)
+pty='s'
+tcl=-0.5
+scale = 0.5 # for multiplots
+```
+
+# Parameters
+
+```{r, echo=FALSE, results='hold'}
+cat('File name :',input$dataFile[['name']],'\n')
+cat('\n')
+cat('Configuration Parameters\n')
+cat('------------------------\n')
+str(listCtrlParams(),give.head=FALSE, give.length=FALSE)
+
+C = FitOCTLib::selX(Inputs$x,Inputs$y,input$depthSel,input$subSample)
+```
+
+
+# Noise estimation
+
+## Optimal parameters
+
+```{r, echo=FALSE, results='hold'}
+out = Inputs$outSmooth
+if(!is.null(out)) {
+  summaryNoise(out) 
+}
+```
+
+
+```{r, echo = FALSE}
+if(!is.null(out)) {
+  FitOCTLib::plotNoise(
+    x=C$x, y=C$y, uy=out$uy, ySmooth=out$ySmooth, gPars = gPars
+  )
+}
+```
+
+# Monoexponential fit
+
+## Fit validation
+
+```{r, echo=FALSE, results='hold'}
+outm = Inputs$outMonoExp
+if(!is.null(outm)) {
+  # Probability Interval for Birge's ratio
+  FitOCTLib::printBr(outm$fit)
+}
+```
+
+## Optimal parameters
+
+```{r, echo=FALSE, results='hold'}
+if(!is.null(outm)) {
+  summaryMonoExp(outm) 
+}
+```
+
+
+```{r, echo = FALSE}
+if(!is.null(outm)) {
+  FitOCTLib::plotMonoExp(
+    x = C$x,
+    y = C$y,
+    uy = out$uy,
+    ySmooth = out$ySmooth,
+    mod = outm$fit$par$m,
+    resid = outm$fit$par$resid,
+    dataType = as.numeric(input$dataType),
+    br = FitOCTLib::printBr(fit = outm$fit, silent = TRUE),
+    gPars = gPars
+  )
+}
+```
+
+
+# Modulated exponential fit
+
+## Fit validation
+
+```{r, echo=FALSE, results='hold'}
+outg = Inputs$outExpGP
+if(!is.null(outg)) {
+  # Probability Interval for Birge's ratio
+  FitOCTLib::printBr(outg$fit)
+}
+```
+
+## Optimal parameters
+
+```{r, echo=FALSE, results='hold'}
+if(!is.null(outg)) {
+  summaryExpGP(outg)  
+}
+```
+
+
+```{r, echo = FALSE, fig.height=10}
+if(!is.null(outg)) {
+  FitOCTLib::plotExpGP(
+    x = C$x,
+    y = C$y,
+    uy = out$uy,
+    ySmooth = out$ySmooth,
+    out = outg,
+    modScale = input$modRange,
+    gPars = gPars,
+    dataType = as.numeric(input$dataType),
+    br = FitOCTLib::printBr(fit = outg$fit,silent = TRUE)
+  )
+}
+```
+
+# Supplementary Material
+
+## Diagnostics for Modulated exponential fit
+
+```{r, echo = FALSE, fig.height=10}
+if(!is.null(outg)) {
+  if (outg$method != 'optim') {
+    fit  = outg$fit
+    pars = c('theta','yGP','lambda','sigma','br')
+    print(rstan::traceplot(fit, inc_warmup=TRUE, pars = pars))
+  }
+}
+```
+
+## Prior pdf for Modulated exponential fit
+
+### Prior parameters statistics
+
+```{r, echo=FALSE, results='hold'}
+outp = Inputs$outPriExpGP
+if(!is.null(outp)) {
+  summaryPriExpGP(outp)  
+}
+```
+
+### Predictive prior
+
+```{r, echo = FALSE}
+if(!is.null(outp)) {
+  FitOCTLib::plotExpGP(
+    x=C$x, y=C$y, uy=out$uy, ySmooth=out$ySmooth,
+    out=outp, modScale=input$modRange, 
+    gPars = gPars, dataType = as.numeric(input$dataType)
+  )
+}
+```
+
+### Prior parameters traces
+
+```{r, echo = FALSE, fig.height=10}
+if(!is.null(outp)) {
+  fit  = outp$fit
+  pars = c('theta','yGP','lambda','sigma')
+  print(rstan::traceplot(fit, inc_warmup=TRUE, pars = pars))
+}
+```
+
+
+### Prior vs. posterior marginal pdfs
+
+```{r, echo = FALSE, fig.height=10}
+if(!is.null(outp) & !is.null(outg)) {
+  if (outg$method != 'optim') {
+    FitOCTLib::plotPriPostAll(outp$fit,outg$fit,gPars)
+  }
+}
+```
+
+
+******
+
+# Session Info
+
+```{r, echo=FALSE}
+sessionInfo()
+```

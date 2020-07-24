@@ -1,5 +1,5 @@
 # MAJ de FitOCT
-FROM ppernot1/fitoct:firsttry
+FROM ppernot1/fitoct
 
 #RUN R -e "devtools::install_github('ppernot/FitOCTlib')"
 COPY FitOCTdock_*.tar.gz  /FitOCTdock.tar.gz

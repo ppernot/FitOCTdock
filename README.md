@@ -1,3 +1,5 @@
+[![DOI](https://zenodo.org/badge/282165832.svg)](https://zenodo.org/badge/latestdoi/282165832)
+
 # FitOCTdock
 Package for running FitOCT UI in docker file ppernot1/fitoct
 

@@ -6,5 +6,7 @@ Package for running FitOCT UI in docker file ppernot1/fitoct
 2. copy it in inst/FitOCTdockerFiles    
 3. run `docker build -t ppernot1/fitoct`
 
+The image is built upon `jrnold/rstan` 
+
 ## How to run the docker container
 `docker run -d -p 3838:3838 ppernot1/fitoct`

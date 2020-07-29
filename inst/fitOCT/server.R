@@ -17,6 +17,8 @@ function(input, output, session) {
       if(class(dat) == 'try-error')
         return(NULL)
 
+      Inputs$x           <<- NULL
+
       # Update depts range selector
       rangeX = range(dat[,1])
       updateSliderInput(
@@ -45,17 +47,20 @@ function(input, output, session) {
 
   # Noise estimation ####
   output$plotNoise   <- renderPlot({
-    if(is.null(Inputs$x))
-      return(NULL)
+    req(Inputs$x)
 
-    C = FitOCTLib::selX(Inputs$x,Inputs$y,input$depthSel,input$subSample)
+    C = FitOCTLib::selX(
+      Inputs$x, Inputs$y,
+      input$depthSel,
+      input$subSample)
 
-    if(!is.finite(IQR(C$x)))
-      return(NULL) # Protect smooth.spline from zero tol
+    # Protect smooth.spline from zero/non-finite tol
+    req(is.finite(IQR(C$x)) & IQR(C$x) != 0 & !is.null(IQR(C$x)))
 
     out = FitOCTLib::estimateNoise(
-      x=C$x, y=C$y, df=input$smooth_df
-    )
+      x = C$x,
+      y = C$y,
+      df = input$smooth_df)
 
     Inputs$outSmooth  <<- out
     Inputs$outMonoExp <<- NULL
@@ -83,10 +88,14 @@ function(input, output, session) {
     if(is.null(out <- Inputs$outSmooth))
       return(NULL)
 
-    C = FitOCTLib::selX(Inputs$x,Inputs$y,input$depthSel,input$subSample)
+    C = FitOCTLib::selX(Inputs$x, Inputs$y, input$depthSel,
+                        input$subSample)
 
     outm = FitOCTLib::fitMonoExp(
-      x=C$x, y=C$y, uy=out$uy, dataType = as.numeric(input$dataType)
+      x = C$x,
+      y = C$y,
+      uy = out$uy,
+      dataType = as.numeric(input$dataType)
     )
 
     Inputs$outMonoExp <<- outm
